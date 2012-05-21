@@ -1,63 +1,141 @@
-<!doctype html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Slic3rsvgviewer by garyhodgson</title>
+<head>
+	<title>Slic3r SVG Viewer</title>
 
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-  </head>
-  <body>
-    <div class="wrapper">
-      <header>
-        <h1>Slic3rsvgviewer</h1>
-        <p>Html viewer for SVG files created by slic3r</p>
-        <p class="view"><a href="https://github.com/garyhodgson/slic3rsvgviewer">View the Project on GitHub <small>garyhodgson/slic3rsvgviewer</small></a></p>
-        <ul>
-          <li><a href="https://github.com/garyhodgson/slic3rsvgviewer/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/garyhodgson/slic3rsvgviewer/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/garyhodgson/slic3rsvgviewer">View On <strong>GitHub</strong></a></li>
-        </ul>
-      </header>
-      <section>
-        <h3>Welcome to GitHub Pages.</h3>
+	<style type="text/css">
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+		body {
+			background:black;
+			color:red;
+		}
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
+		a:visited {
+			color: red;
+		}
+		
+		a:link {
+			color: red;
+		}
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+		a:active {
+			color: red;
+		}
 
-<h3>Designer Templates</h3>
+		a:hover {
+			color: red;
+		}
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+		#model {
+			margin: 100px;
+			border: red 1px dashed;
+		}
 
-<h3>Rather Drive Stick?</h3>
+		input[type="range"] {
+		    -webkit-appearance: none;
+		    background-color: red;
+		    height: 2px;
+		}
+		 
+		input[type="range"]::-webkit-slider-thumb {
+		    -webkit-appearance: none;
+		    position: relative;
+		    top: -1px;
+		    z-index: 1;
+		    width: 11px;
+		    height: 11px;
+		 
+		    -webkit-border-radius: 40px;
+		    -moz-border-radius: 40px;
+		    border-radius: 40px;
+		    background-color: red;
+		}
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+	</style>
 
-<h3>Authors and Contributors</h3>
+	<script src="js/jquery.js"></script>
+	<script src="js/jquery.svg.min.js"></script>
 
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+	<script type="text/javascript">
 
-<h3>Support or Contact</h3>
+	var svgDoc;
+	var svgFilename;
 
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
-      </section>
-      <footer>
-        <p>This project is maintained by <a href="https://github.com/garyhodgson">garyhodgson</a></p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
-      </footer>
-    </div>
-    <script src="javascripts/scale.fix.js"></script>
-    
-  </body>
+	function getParameterByName(name)
+	{
+	  name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+	  var regexS = "[\\?&]" + name + "=([^&#]*)";
+	  var regex = new RegExp(regexS);
+	  var results = regex.exec(window.location.search);
+	  if(results == null)
+	    return undefined;
+	  else
+	    return decodeURIComponent(results[1].replace(/\+/g, " "));
+	}
+
+
+	$(document).ready(function() {
+
+		$('#model').svg();
+
+		svgFilename = getParameterByName('file')||'examples/belt_pulley3.svg';
+
+		if (svgFilename){
+			loadSvgModel(svgFilename);
+		}
+
+		function loadSvgModel(svgFilename){
+
+			$.ajax({
+				//url:'1x_stages_kit.svg',
+				url: svgFilename,
+				success: function(d){
+					svgDoc = d;
+					var width = svgDoc.getElementsByTagName("svg")[0].getAttribute('width')
+					var height = svgDoc.getElementsByTagName("svg")[0].getAttribute('height')
+					$('#model').css('width',width+"mm");
+					$('#model').css('height',height+"mm");
+					$('#model').svg().svg('get').configure({width: width+"mm", height: height+"mm",viewBox:"0 0 "+width+" " + height}) 
+					showLayer();
+				}
+			});
+		}
+
+		$('#layer').change(function(){
+			$('#sliceCurrent').html($(this).val())
+			showLayer();
+		});
+
+		function showLayer(){
+			var groups = svgDoc.getElementsByTagName('g');
+
+			$('#sliceMax').html(groups.length)
+			$('#layer').attr('max',groups.length)
+
+			$.each(groups, function(i, g){
+				var gId = g.getAttribute('id').split('layer')[1]
+				
+    			if (gId == $('#layer').val()){
+    				var svg = $('#model').svg('get')
+    				svg.clear();
+    				svg.add(g);
+    			}
+			})
+		}
+
+	});
+	</script>
+</head>
+<body>
+	Examples:
+	<ul>
+		<li><a href="?file=examples/belt_pulley3.svg">belt_pulley3.svg</a></li>
+		<li><a href="?file=examples/1x_stages_kit.svg">1x_stages_kit.svg</a></li>
+		<li><a href="?file=examples/Goldberg-8-3-george-hart.svg">Goldberg-8-3-george-hart.svg</a></li>
+	</ul>
+
+	<span id="sliceMin">0</span>
+	<input id="layer" name="layer" type="range"  min="0" max="100" value="0"/>
+	<span id="sliceMax"></span>&nbsp;(<span id="sliceCurrent">0</span>)
+	<div id="model"></div>
+</body>
 </html>
