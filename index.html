@@ -61,7 +61,6 @@
 	<script type="text/javascript">
 
 	var svgDoc;
-	var svgFilename;
 
 	function getParameterByName(name)
 	{
@@ -75,55 +74,94 @@
 	    return decodeURIComponent(results[1].replace(/\+/g, " "));
 	}
 
+	function handleDrop(e) {
+		e.stopPropagation(); // Stops some browsers from redirecting.
+		e.preventDefault();
+
+		var files = e.dataTransfer.files;
+		for (var i = 0, f; f = files[i]; i++) {
+			// Read the File objects in this FileList.
+			if (f.type != 'image/svg+xml'){
+				if (f.type != ''){
+					alert("File of type \'" + f.type+"'\' not recognised.")
+				} else {
+					alert("File type not recognised.")
+				}
+				
+				continue;
+			}
+
+			var reader = new FileReader();
+
+
+			// Closure to capture the file information.
+			reader.onload = (function(theFile) {
+				return function(e) {
+					svgDoc = $.parseXML(e.target.result);					
+					showSvg();
+				};
+			})(f);
+
+			reader.readAsText(f);
+			$('#svgFilename').text(f.name);
+		}
+	}
+
+
+	function loadSvgModel(svgFilename){
+
+		$.ajax({
+			//url:'1x_stages_kit.svg',
+			url: svgFilename,
+			success: function(d){
+				svgDoc = d;
+				showSvg()
+			}
+		});
+	}
+
+	function showSvg(){
+		var width = svgDoc.getElementsByTagName("svg")[0].getAttribute('width')
+		var height = svgDoc.getElementsByTagName("svg")[0].getAttribute('height')
+		$('#model').css('width',width+"mm");
+		$('#model').css('height',height+"mm");
+		$('#model').svg().svg('get').configure({width: width+"mm", height: height+"mm",viewBox:"0 0 "+width+" " + height}) 
+		showLayer();
+	}
+
+	function showLayer(){
+		var groups = svgDoc.getElementsByTagName('g');
+
+		$('#sliceMax').html(groups.length)
+		$('#layer').attr('max',groups.length)
+			
+		var slice = groups[$('#layer').val()]
+
+		if (slice){
+			var svg = $('#model').svg('get')
+			svg.clear();
+			svg.add(slice);
+		}
+	}
 
 	$(document).ready(function() {
+		
+		var dropZone = document.getElementsByTagName("body")[0];
+		dropZone.addEventListener('drop', handleDrop, false);
 
 		$('#model').svg();
 
-		svgFilename = getParameterByName('file')||'examples/belt_pulley3.svg';
+		var svgFilename = getParameterByName('file')||'examples/belt_pulley3.svg';
 
 		if (svgFilename){
+			$('#svgFilename').text(svgFilename);
 			loadSvgModel(svgFilename);
-		}
-
-		function loadSvgModel(svgFilename){
-
-			$.ajax({
-				//url:'1x_stages_kit.svg',
-				url: svgFilename,
-				success: function(d){
-					svgDoc = d;
-					var width = svgDoc.getElementsByTagName("svg")[0].getAttribute('width')
-					var height = svgDoc.getElementsByTagName("svg")[0].getAttribute('height')
-					$('#model').css('width',width+"mm");
-					$('#model').css('height',height+"mm");
-					$('#model').svg().svg('get').configure({width: width+"mm", height: height+"mm",viewBox:"0 0 "+width+" " + height}) 
-					showLayer();
-				}
-			});
-		}
+		}		
 
 		$('#layer').change(function(){
 			$('#sliceCurrent').html($(this).val())
 			showLayer();
-		});
-
-		function showLayer(){
-			var groups = svgDoc.getElementsByTagName('g');
-
-			$('#sliceMax').html(groups.length)
-			$('#layer').attr('max',groups.length)
-
-			$.each(groups, function(i, g){
-				var gId = g.getAttribute('id').split('layer')[1]
-				
-    			if (gId == $('#layer').val()){
-    				var svg = $('#model').svg('get')
-    				svg.clear();
-    				svg.add(g);
-    			}
-			})
-		}
+		});		
 
 	});
 	</script>
@@ -135,6 +173,9 @@
 		<li><a href="?file=examples/1x_stages_kit.svg">1x_stages_kit.svg</a></li>
 		<li><a href="?file=examples/Goldberg-8-3-george-hart.svg">Goldberg-8-3-george-hart.svg</a></li>
 	</ul>
+	<div id="instructions">Drag a SVG file onto the page to display.</div>
+	<br>
+	File: <span id="svgFilename"></span><br><br>
 	<span id="sliceMin">0</span>
 	<input id="layer" name="layer" type="range"  min="0" max="100" value="0"/>
 	<span id="sliceMax"></span>&nbsp;(<span id="sliceCurrent">0</span>)
