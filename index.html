@@ -56,6 +56,7 @@
 	<script src="js/html5slider.js"></script>
 
 	<script src="js/jquery.js"></script>
+	<script src="js/modernizr.js"></script>
 	<script src="js/jquery.svg.min.js"></script>
 
 	<script type="text/javascript">
@@ -74,6 +75,7 @@
 	    return decodeURIComponent(results[1].replace(/\+/g, " "));
 	}
 
+
 	function handleDrop(e) {
 		e.stopPropagation(); // Stops some browsers from redirecting.
 		e.preventDefault();
@@ -86,13 +88,11 @@
 					alert("File of type \'" + f.type+"'\' not recognised.")
 				} else {
 					alert("File type not recognised.")
-				}
-				
+				}				
 				continue;
 			}
 
 			var reader = new FileReader();
-
 
 			// Closure to capture the file information.
 			reader.onload = (function(theFile) {
@@ -111,7 +111,6 @@
 	function loadSvgModel(svgFilename){
 
 		$.ajax({
-			//url:'1x_stages_kit.svg',
 			url: svgFilename,
 			success: function(d){
 				svgDoc = d;
@@ -145,6 +144,10 @@
 	}
 
 	$(document).ready(function() {
+
+		if (!Modernizr.draganddrop) {
+			$('#dndinstructions').text('')
+		}
 		
 		var dropZone = document.getElementsByTagName("body")[0];
 		dropZone.addEventListener('drop', handleDrop, false);
@@ -173,7 +176,7 @@
 		<li><a href="?file=examples/1x_stages_kit.svg">1x_stages_kit.svg</a></li>
 		<li><a href="?file=examples/Goldberg-8-3-george-hart.svg">Goldberg-8-3-george-hart.svg</a></li>
 	</ul>
-	<div id="instructions">Drag a SVG file onto the page to display.</div>
+	<div id="dndinstructions">Drag a SVG file onto the page to display.</div>
 	<br>
 	File: <span id="svgFilename"></span><br><br>
 	<span id="sliceMin">0</span>
