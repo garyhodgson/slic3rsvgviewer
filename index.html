@@ -164,20 +164,31 @@
 		$('#layer').change(function(){
 			$('#sliceCurrent').html($(this).val())
 			showLayer();
-		});		
+		});
+
+		$("body").keydown(function(e) {
+			if (e.keyCode == 39){
+				$('#layer').val(Math.min( parseInt($('#layer').val())+1 , $('#layer').attr("max") ));
+				$('#layer').change();
+			} else if (e.keyCode == 37){
+				$('#layer').val(Math.max( parseInt($('#layer').val())-1 , $('#layer').attr("min") ));
+				$('#layer').change();
+			}
+		});
 
 	});
 	</script>
 </head>
 <body>
-	Examples:
+	<div id="dndinstructions">Drag a SVG file onto the page to display. Left and Right arrows to progress through the slices.</div>
+	<br>
+	<div>Examples:
 	<ul>
 		<li><a href="?file=examples/belt_pulley3.svg">belt_pulley3.svg</a></li>
 		<li><a href="?file=examples/1x_stages_kit.svg">1x_stages_kit.svg</a></li>
 		<li><a href="?file=examples/Goldberg-8-3-george-hart.svg">Goldberg-8-3-george-hart.svg</a></li>
 	</ul>
-	<div id="dndinstructions">Drag a SVG file onto the page to display.</div>
-	<br>
+	</div>
 	File: <span id="svgFilename"></span><br><br>
 	<span id="sliceMin">0</span>
 	<input id="layer" name="layer" type="range"  min="0" max="100" value="0"/>
