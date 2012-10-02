@@ -152,6 +152,12 @@
 		var dropZone = document.getElementsByTagName("body")[0];
 		dropZone.addEventListener('drop', handleDrop, false);
 
+		// for Firefox
+		dropZone.ondragover = function(e) {
+    		e.preventDefault();
+		};
+
+
 		$('#model').svg();
 
 		var svgFilename = getParameterByName('file')||'examples/belt_pulley3.svg';
